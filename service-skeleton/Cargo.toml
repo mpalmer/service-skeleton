@@ -1,0 +1,31 @@
+[package]
+name = "service-skeleton"
+description = "The bare bones of a service"
+authors = ["Matt Palmer <matt@hezmatt.org>"]
+version = "0.0.0-git"
+license = "GPL-3.0-only"
+homepage = "https://github.com/mpalmer/service-skeleton"
+repository = "https://github.com/mpalmer/service-skeleton"
+keywords = ["daemon", "service", "signal", "logging"]
+categories = ["command-line-interface", "config", "development-tools::debugging"]
+include = [
+	"../README.md",
+	"../LICENCE",
+	"/src/*.rs",
+]
+readme = "../README.md"
+edition = "2021"
+
+[dependencies]
+flexi_logger = "0"
+lazy_static = "1.4"
+log = "0.4"
+heck = "0.4"
+parking_lot = "0.12"
+prometheus-client = "0.21"
+service-skeleton_derive = { version = "0.0.0-git", path = "../service-skeleton_derive" }
+thiserror = "1.0"
+tiny_http = "0.12"
+
+[dev-dependencies]
+log = "0.4"

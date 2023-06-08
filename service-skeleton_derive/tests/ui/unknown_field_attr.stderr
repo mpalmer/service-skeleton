@@ -1,0 +1,5 @@
+error: Unknown field: `something`
+ --> tests/ui/unknown_field_attr.rs:6:11
+  |
+6 |     #[config(something)]
+  |              ^^^^^^^^^

@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"service-skeleton",
+	"service-skeleton_derive",
+]
+resolver = "2"
