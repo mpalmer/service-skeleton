@@ -11,7 +11,7 @@ categories = ["command-line-interface", "config", "development-tools::debugging"
 include = [
 	"../README.md",
 	"../LICENCE",
-	"/src/*.rs",
+	"/src/**/*.rs",
 ]
 readme = "../README.md"
 edition = "2021"
