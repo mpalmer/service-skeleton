@@ -33,7 +33,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
           RELEASE_TAG: ${{ github.ref }}
         run: |
-          for crate in service-skeleton service-skeleton_derive; do
+          for crate in service-skeleton_derive service-skeleton; do
             mv $crate/Cargo.toml $crate/Cargo.toml.orig
             sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" $crate/Cargo.toml.orig >$crate/Cargo.toml
             cargo publish -p $crate --allow-dirty
