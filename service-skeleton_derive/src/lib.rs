@@ -36,12 +36,18 @@ impl ToTokens for ServiceConfigReceiver {
 			);
 			let field_type = &f.ty;
 
+			let (is_option, value_type) = if let Some(value_type) = optionalise_type(field_type) {
+				(true, value_type)
+			} else {
+				(false, field_type)
+			};
+
 			let value_parser = if let Some(value_parser) = &f.value_parser {
 				let parser = value_parser.as_ref();
 				quote_spanned! { value_parser.span()=> #parser }
 			} else {
 				quote_spanned! { f.span()=>
-					|s: &str| s.parse::<#field_type>()
+					|s: &str| s.parse::<#value_type>()
 				}
 			};
 
@@ -52,9 +58,15 @@ impl ToTokens for ServiceConfigReceiver {
 				quote_spanned! { f.span()=> None }
 			};
 
-			fields_tokens.extend(quote! {
-				#field_name: service_skeleton::config::determine_value(#field_name_as_string, #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
-			});
+			if is_option {
+				fields_tokens.extend(quote! {
+					#field_name: service_skeleton::config::determine_optional_value(#field_name_as_string, #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
+				});
+			} else {
+				fields_tokens.extend(quote! {
+					#field_name: service_skeleton::config::determine_value(#field_name_as_string, #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
+				});
+			}
 		}
 
 		tokens.extend(quote! {
@@ -69,6 +81,45 @@ impl ToTokens for ServiceConfigReceiver {
 				}
 			}
 		});
+	}
+}
+
+// Determine if the given type is an Option<T>, and if so, return Some(T), otherwise return None.
+//
+fn optionalise_type(ty: &syn::Type) -> Option<&syn::Type> {
+	#[allow(clippy::wildcard_enum_match_arm)] // Yes, that's rather the point here
+	match ty {
+		syn::Type::Path(tp) if tp.qself.is_none() => {
+			let path_idents = tp.path.segments.iter().fold(String::new(), |mut s, v| {
+				s.push_str(&v.ident.to_string());
+				s.push_str("->");
+				s
+			});
+			if vec![
+				"Option->",
+				"std->option->Option->",
+				"core->option->Option->",
+			]
+			.into_iter()
+			.any(|s| *s == path_idents)
+			{
+				#[allow(clippy::unwrap_used)] // There has to be segments if we got here
+				if let syn::PathArguments::AngleBracketed(args) =
+					&tp.path.segments.iter().last().unwrap().arguments
+				{
+					if let Some(syn::GenericArgument::Type(t)) = &args.args.iter().next() {
+						Some(t)
+					} else {
+						None
+					}
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		}
+		_ => None,
 	}
 }
 
