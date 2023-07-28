@@ -30,7 +30,7 @@ jobs:
 
       - name: Install rust
         id: rust-install
-        uses: dtolnay/rust-toolchain@latest
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
 
