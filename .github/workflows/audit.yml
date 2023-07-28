@@ -51,8 +51,9 @@ jobs:
 
       - name: Install rust
         id: rust-install
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly
           components: clippy
 
       # Normally this would be where we use actions/cache, but since nightly
