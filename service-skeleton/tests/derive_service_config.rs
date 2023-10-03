@@ -1,4 +1,3 @@
-#[allow(unused_crate_dependencies)]
 use service_skeleton::ServiceConfig;
 
 #[derive(Debug, ServiceConfig)]
@@ -15,3 +14,8 @@ fn test_default_parse() {
 			.value
 	);
 }
+
+use {
+	flexi_logger as _, heck as _, lazy_static as _, log as _, parking_lot as _,
+	prometheus_client as _, service_skeleton_derive as _, thiserror as _, tiny_http as _,
+};
