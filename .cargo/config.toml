@@ -27,6 +27,7 @@ rustflags = [
     "-Wclippy::let_underscore_must_use",
     "-Wclippy::lossy_float_literal",
     "-Wclippy::map_err_ignore",
+# Enable this when we're fully documented
 #    "-Wclippy::missing_docs_in_private_items",
     "-Wclippy::mixed_read_write_in_expression",
     "-Wclippy::multiple_inherent_impl",
@@ -81,7 +82,7 @@ rustflags = [
     "-Wunused_lifetimes",
     "-Wunused_macro_rules",
     "-Wunused_qualifications",
-    "-Wunused_tuple_struct_fields",
+    "-Wdead_code",
     "-Aclippy::default_trait_access",
 	# Temporary until I wrote more docs
 	"-Aclippy::missing_errors_doc",
