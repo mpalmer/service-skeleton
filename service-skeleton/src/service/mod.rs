@@ -17,7 +17,7 @@ use std::{
 };
 
 use crate::{
-	metric::{start_metrics_server, store_metric},
+	metric::{start_metrics_server, store_metric, Histogrammer},
 	ServiceConfig,
 };
 
@@ -56,19 +56,16 @@ impl Service {
 		self.add_metric(name, description, Family::<L, Gauge>::default())
 	}
 
-	pub fn histogram<
-		L: Clone + Debug + EncodeLabelSet + Eq + Hash + Send + Sync + 'static,
-		C: Clone + Fn() -> Histogram + Send + Sync + 'static,
-	>(
+	pub fn histogram<L: Clone + Debug + EncodeLabelSet + Eq + Hash + Send + Sync + 'static>(
 		self,
 		name: impl AsRef<str>,
 		description: impl AsRef<str>,
-		constructor: C,
+		buckets: &[f64],
 	) -> Self {
 		self.add_metric(
 			name,
 			description,
-			Family::<L, Histogram, C>::new_with_constructor(constructor),
+			Family::<L, Histogram, Histogrammer>::new_with_constructor(Histogrammer::new(buckets)),
 		)
 	}
 
