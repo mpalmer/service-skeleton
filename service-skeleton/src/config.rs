@@ -21,7 +21,7 @@ impl Service for () {
 }
 
 pub fn determine_value<RT: Debug + Sync + Send, E: Display>(
-	name: &str,
+	var: &str,
 	parser: impl Fn(&str) -> Result<RT, E>,
 	env_value: Option<&String>,
 	default: Option<&'static str>,
@@ -29,14 +29,14 @@ pub fn determine_value<RT: Debug + Sync + Send, E: Display>(
 	let value_to_parse: &str = match (env_value, default) {
 		(None, Some(default_value)) => Ok(default_value),
 		(Some(value), _) => Ok(value.as_str()),
-		(None, None) => Err(Error::no_config_value(name)),
+		(None, None) => Err(Error::no_config_value(var)),
 	}?;
 
-	parser(value_to_parse).map_err(|e| Error::config_value_parse(name, value_to_parse, e))
+	parser(value_to_parse).map_err(|e| Error::config_value_parse(var, value_to_parse, e))
 }
 
 pub fn determine_optional_value<RT: Debug + Sync + Send, E: Display>(
-	name: &str,
+	var: &str,
 	parser: impl Fn(&str) -> Result<RT, E>,
 	env_value: Option<&String>,
 	default: Option<&'static str>,
@@ -48,6 +48,6 @@ pub fn determine_optional_value<RT: Debug + Sync + Send, E: Display>(
 	}?;
 
 	parser(value_to_parse)
-		.map_err(|e| Error::config_value_parse(name, value_to_parse, e))
+		.map_err(|e| Error::config_value_parse(var, value_to_parse, e))
 		.map(|v| Some(v))
 }

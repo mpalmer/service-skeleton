@@ -8,13 +8,13 @@ use std::{
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
-	#[error("no value found for required configuration item {name}")]
-	ConfigValueRequired { name: String },
+	#[error("required config variable {var} not found")]
+	ConfigValueRequired { var: String },
 
-	#[error("failed to parse value {value} for {name}: {cause}")]
+	#[error("failed to parse value {value} in {var}: {cause}")]
 	ConfigValueParse {
 		value: String,
-		name: String,
+		var: String,
 		cause: String,
 	},
 
@@ -37,16 +37,16 @@ pub enum Error {
 
 impl Error {
 	#[must_use]
-	pub fn no_config_value(name: &str) -> Error {
+	pub fn no_config_value(var: &str) -> Error {
 		Error::ConfigValueRequired {
-			name: name.to_string(),
+			var: var.to_string(),
 		}
 	}
 
 	#[must_use]
-	pub fn config_value_parse(name: &str, value: impl Debug, cause: impl Display) -> Error {
+	pub fn config_value_parse(var: &str, value: impl Debug, cause: impl Display) -> Error {
 		Error::ConfigValueParse {
-			name: name.to_string(),
+			var: var.to_string(),
 			value: format!("{value:?}"),
 			cause: cause.to_string(),
 		}

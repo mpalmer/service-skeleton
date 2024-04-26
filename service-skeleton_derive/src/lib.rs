@@ -18,6 +18,7 @@ impl ToTokens for ServiceConfigReceiver {
 		let (imp, ty, wher) = self.generics.split_for_impl();
 
 		let mut fields_tokens = TokenStream::new();
+		let mut sensitive_env_vars_tokens = TokenStream::new();
 
 		#[allow(clippy::expect_used)] // Ensured by darling(supports(struct_named))
 		for f in self
@@ -58,13 +59,19 @@ impl ToTokens for ServiceConfigReceiver {
 				quote_spanned! { f.span()=> None }
 			};
 
+			if f.sensitive.is_some() {
+				sensitive_env_vars_tokens.extend(quote! {
+					std::env::remove_var(&format!(#env_var_format_string, prefix));
+				});
+			}
+
 			if is_option {
 				fields_tokens.extend(quote! {
-					#field_name: service_skeleton::config::determine_optional_value(#field_name_as_string, #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
+					#field_name: service_skeleton::config::determine_optional_value(&format!(#env_var_format_string, prefix), #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
 				});
 			} else {
 				fields_tokens.extend(quote! {
-					#field_name: service_skeleton::config::determine_value(#field_name_as_string, #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
+					#field_name: service_skeleton::config::determine_value(&format!(#env_var_format_string, prefix), #value_parser, map.get(&format!(#env_var_format_string, prefix)), #default_value)?,
 				});
 			}
 		}
@@ -74,6 +81,8 @@ impl ToTokens for ServiceConfigReceiver {
 				fn from_env_vars(prefix: &str, vars: impl Iterator<Item = (String, String)>) -> Result<#struct_name, service_skeleton::Error> {
 					let prefix = service_skeleton::heck::AsShoutySnekCase(prefix).to_string();
 					let map: std::collections::HashMap<String, String> = vars.collect();
+
+					#sensitive_env_vars_tokens
 
 					Ok(#struct_name {
 						#fields_tokens
@@ -131,6 +140,7 @@ struct ServiceConfigField {
 
 	default_value: Option<SpannedValue<String>>,
 	value_parser: Option<SpannedValue<ExprPath>>,
+	sensitive: Option<SpannedValue<()>>,
 }
 
 #[proc_macro_derive(ServiceConfig, attributes(config))]
