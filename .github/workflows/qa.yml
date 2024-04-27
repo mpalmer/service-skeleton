@@ -43,7 +43,8 @@ jobs:
 
       - name: Check docs
         run: |
-          cargo +${{ steps.rust-install.outputs.name }} rustdoc -- -D warnings
+          cargo +${{ steps.rust-install.outputs.name }} rustdoc -p service-skeleton -- -D warnings
+          cargo +${{ steps.rust-install.outputs.name }} rustdoc -p service-skeleton_derive -- -D warnings
 
   test:
     strategy:
