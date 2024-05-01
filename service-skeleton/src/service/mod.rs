@@ -40,6 +40,7 @@ pub struct Service {
 }
 
 impl Service {
+	#[must_use]
 	pub fn counter<L: Clone + Debug + EncodeLabelSet + Eq + Hash + Send + Sync + 'static>(
 		self,
 		name: impl AsRef<str>,
@@ -48,6 +49,7 @@ impl Service {
 		self.add_metric(name, description, Family::<L, Counter>::default())
 	}
 
+	#[must_use]
 	pub fn gauge<L: Clone + Debug + EncodeLabelSet + Eq + Hash + Send + Sync + 'static>(
 		self,
 		name: impl AsRef<str>,
@@ -56,6 +58,7 @@ impl Service {
 		self.add_metric(name, description, Family::<L, Gauge>::default())
 	}
 
+	#[must_use]
 	pub fn histogram<L: Clone + Debug + EncodeLabelSet + Eq + Hash + Send + Sync + 'static>(
 		self,
 		name: impl AsRef<str>,
