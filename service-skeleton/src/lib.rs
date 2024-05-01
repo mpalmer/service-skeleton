@@ -12,7 +12,7 @@ pub use error::Error;
 pub mod metric;
 
 mod service;
-pub use service::service;
+pub use service::{service, Service};
 
 #[doc(hidden)]
 pub use heck;
