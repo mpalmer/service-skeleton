@@ -17,15 +17,17 @@ readme = "../README.md"
 edition = "2021"
 
 [dependencies]
-flexi_logger = "0"
 lazy_static = "1.4"
-log = "0.4"
 heck = "0.4"
 parking_lot = "0.12"
 prometheus-client = "0.21"
 service-skeleton_derive = { version = "0.0.0-git", path = "../service-skeleton_derive" }
 thiserror = "1.0"
 tiny_http = "0.12"
+tracing = { version = "0.1", features = ["max_level_trace", "release_max_level_debug"] }
+tracing-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-tree = "0.3"
 
 [dev-dependencies]
 log = "0.4"

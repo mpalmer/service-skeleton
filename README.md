@@ -48,11 +48,11 @@ However, if the closure does terminate for any reason (whether via panic or othe
 Which is a nice segue into the next feature...
 
 
-## Logging
+## Logging / Tracing
 
-One of the things that `service-skeleton` configures for you is logging, using the [`log` crate's](https://crates.io/crates/log) well-established facade.
+One of the things that `service-skeleton` configures for you is logging and tracing, using the [`tracing` crate's](https://crates.io/crates/tracing) well-established facade.
 By default, all log messages with severity `warn` or higher will be printed to `stderr` with a bunch of related useful information.
-Again, you don't have to do anything special, just start logging away:
+Again, you don't have to do anything special, just start instrumenting:
 
 ```rust
 # use std::time::Duration;
@@ -63,11 +63,14 @@ fn main() {
     service("LogHello").run(|_cfg: ()| say_hello());
 }
 
+#[tracing::instrument]
 fn say_hello() {
-    log::info!("Hello, logs!");
+    tracing::info!("Hello, logs!");
     sleep(Duration::from_secs(5));
 }
 ```
+
+If you already have code that calls the `log` macros, such as `log::info!()`, `log::debug!()`, and so on, don't worry -- we automatically capture all `log` events and forward them into `tracing`.
 
 This will print out the log message specified every five seconds.
 The default logging configuration is that everything at `info` level or above is logged.

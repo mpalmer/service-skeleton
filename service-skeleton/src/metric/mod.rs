@@ -94,7 +94,7 @@ where
 			let time_series = family.get_or_create(labels);
 			f(time_series);
 		} else {
-			log::warn!(
+			tracing::warn!(
 				"Could not find {} metric {} with labels {}",
 				name.as_ref(),
 				type_name::<M>(),
@@ -102,6 +102,6 @@ where
 			);
 		};
 	} else {
-		log::warn!("No metric named {}", name.as_ref());
+		tracing::warn!("No metric named {}", name.as_ref());
 	}
 }

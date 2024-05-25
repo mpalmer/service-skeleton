@@ -22,13 +22,13 @@ pub(crate) fn start_metrics_server(port: u16, mut registry: Registry) -> Result<
 	thread::Builder::new()
 		.name("MetricsServer".to_string())
 		.spawn(move || {
-			log::info!("Metrics server listening on [::]:{port}");
+			tracing::info!("Metrics server listening on [::]:{port}");
 
 			loop {
 				let request = match server.recv() {
 					Ok(req) => req,
 					Err(e) => {
-						log::error!("Error while receiving metrics server request: {e}");
+						tracing::error!("Error while receiving metrics server request: {e}");
 						break;
 					}
 				};
@@ -39,7 +39,7 @@ pub(crate) fn start_metrics_server(port: u16, mut registry: Registry) -> Result<
 						if request.url() == "/metrics" {
 							let mut buf = String::new();
 							if let Err(e) = text::encode(&mut buf, &registry) {
-								log::warn!("Failed to encode metrics: {e}");
+								tracing::warn!("Failed to encode metrics: {e}");
 								send_response(request, Response::empty(500u16), &req_count);
 							} else {
 								send_response(request, Response::from_string(buf), &req_count);
@@ -71,7 +71,7 @@ fn send_response<R: std::io::Read>(
 	};
 
 	if let Err(e) = request.respond(response) {
-		log::warn!("Failed to send metrics response: {e}");
+		tracing::warn!("Failed to send metrics response: {e}");
 		req_labels.status = 666;
 	}
 
