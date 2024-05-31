@@ -1,4 +1,4 @@
-use darling::{ast, util::SpannedValue, FromDeriveInput, FromField};
+use darling::{ast, util::Flag, util::SpannedValue, FromDeriveInput, FromField};
 use heck::AsShoutySnekCase;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned, ToTokens};
@@ -59,7 +59,7 @@ impl ToTokens for ServiceConfigReceiver {
 				quote_spanned! { f.span()=> None }
 			};
 
-			if f.sensitive.is_some() {
+			if f.is_sensitive() {
 				sensitive_env_vars_tokens.extend(quote! {
 					std::env::remove_var(&format!(#env_var_format_string, prefix));
 				});
@@ -140,7 +140,13 @@ struct ServiceConfigField {
 
 	default_value: Option<SpannedValue<String>>,
 	value_parser: Option<SpannedValue<ExprPath>>,
-	sensitive: Option<SpannedValue<()>>,
+	sensitive: Flag,
+}
+
+impl ServiceConfigField {
+	fn is_sensitive(&self) -> bool {
+		self.sensitive.is_present()
+	}
 }
 
 #[proc_macro_derive(ServiceConfig, attributes(config))]
