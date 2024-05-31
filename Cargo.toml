@@ -4,3 +4,28 @@ members = [
 	"service-skeleton_derive",
 ]
 resolver = "2"
+
+[workspace.package]
+authors = ["Matt Palmer <matt@hezmatt.org>"]
+version = "0.0.0-git"
+license = "GPL-3.0-only"
+homepage = "https://github.com/mpalmer/service-skeleton"
+repository = "https://github.com/mpalmer/service-skeleton"
+edition = "2021"
+
+[workspace.dependencies]
+service-skeleton_derive = { version = "0.0.0-git", path = "service-skeleton_derive" }
+darling = "0.20"
+heck = "0.5"
+parking_lot = "0.12"
+proc-macro2 = "1.0"
+prometheus-client = "0.21"
+quote = "1.0"
+syn = "2.0"
+thiserror = "1.0"
+tiny_http = "0.12"
+tracing = "0.1"
+tracing-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-tree = "0.3"
+trybuild = "1.0"

@@ -1,4 +1,3 @@
-use lazy_static::lazy_static;
 use parking_lot::MappedRwLockReadGuard;
 use prometheus_client::metrics::{
 	counter::Counter,
@@ -6,6 +5,7 @@ use prometheus_client::metrics::{
 	gauge::Gauge,
 	histogram::Histogram,
 };
+use std::sync::OnceLock;
 
 // Re-export so services don't have to depend on prometheus-client directly,
 // which can get version-compatible-ugly real quick
@@ -44,14 +44,15 @@ impl MetricConstructor<Histogram> for Histogrammer {
 	}
 }
 
-lazy_static! {
-	static ref METRICS: Arc<Mutex<HashMap<String, Arc<dyn Any + Send + Sync + 'static>>>> =
-		Arc::new(Mutex::new(HashMap::default()));
+fn metrics() -> &'static Mutex<HashMap<String, Arc<dyn Any + Send + Sync + 'static>>> {
+	static METRICS: OnceLock<Mutex<HashMap<String, Arc<dyn Any + Send + Sync + 'static>>>> =
+		OnceLock::new();
+	METRICS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
 pub(crate) fn store_metric(name: impl AsRef<str>, metric: impl Any + Send + Sync + 'static) {
 	#[allow(clippy::expect_used)] // If this explodes, we're all in a world of hurt
-	let mut metrics = METRICS.lock().expect("METRICS mutex to not be poisoned");
+	let mut metrics = metrics().lock().expect("METRICS mutex to not be poisoned");
 
 	metrics.insert(name.as_ref().to_string(), Arc::new(metric));
 }
@@ -87,7 +88,7 @@ where
 	C: MetricConstructor<M> + 'static,
 {
 	#[allow(clippy::expect_used)] // If this explodes, we're all in a world of hurt
-	let m = METRICS.lock().expect("METRICS mutex to not be poisoned");
+	let m = metrics().lock().expect("METRICS mutex to not be poisoned");
 
 	if let Some(any_family) = m.get(name.as_ref()) {
 		if let Some(family) = any_family.downcast_ref::<Family<L, M, C>>() {

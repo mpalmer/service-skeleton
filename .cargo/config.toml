@@ -77,7 +77,6 @@ rustflags = [
     "-Wunsafe_code",
     "-Wunsafe_op_in_unsafe_fn",
     "-Wunused",
-    "-Wunused_crate_dependencies",
     "-Wunused_import_braces",
     "-Wunused_lifetimes",
     "-Wunused_macro_rules",

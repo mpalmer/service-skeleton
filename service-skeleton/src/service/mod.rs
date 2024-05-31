@@ -106,7 +106,6 @@ impl Service {
 	where
 		CFG: ServiceConfig + Clone + Debug + Sync + Send + UnwindSafe,
 	{
-
 		let layer = tracing_tree::HierarchicalLayer::default()
 			.with_writer(tracing_subscriber::fmt::TestWriter::new())
 			.with_indent_lines(true)

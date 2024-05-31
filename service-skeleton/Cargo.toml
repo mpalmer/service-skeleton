@@ -1,11 +1,11 @@
 [package]
 name = "service-skeleton"
 description = "The bare bones of a service"
-authors = ["Matt Palmer <matt@hezmatt.org>"]
-version = "0.0.0-git"
-license = "GPL-3.0-only"
-homepage = "https://github.com/mpalmer/service-skeleton"
-repository = "https://github.com/mpalmer/service-skeleton"
+authors.workspace = true
+version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
 keywords = ["daemon", "service", "signal", "logging"]
 categories = ["command-line-interface", "config", "development-tools::debugging"]
 include = [
@@ -14,20 +14,16 @@ include = [
 	"/src/**/*.rs",
 ]
 readme = "../README.md"
-edition = "2021"
+edition.workspace = true
 
 [dependencies]
-lazy_static = "1.4"
-heck = "0.4"
-parking_lot = "0.12"
-prometheus-client = "0.21"
-service-skeleton_derive = { version = "0.0.0-git", path = "../service-skeleton_derive" }
-thiserror = "1.0"
-tiny_http = "0.12"
-tracing = { version = "0.1", features = ["max_level_trace", "release_max_level_debug"] }
-tracing-log = "0.2"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-tree = "0.3"
-
-[dev-dependencies]
-log = "0.4"
+heck.workspace = true
+parking_lot.workspace = true
+prometheus-client.workspace = true
+service-skeleton_derive.workspace = true
+thiserror.workspace = true
+tiny_http.workspace = true
+tracing.workspace = true
+tracing-log.workspace = true
+tracing-subscriber.workspace = true
+tracing-tree.workspace = true
