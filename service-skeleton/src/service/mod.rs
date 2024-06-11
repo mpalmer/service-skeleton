@@ -133,7 +133,7 @@ impl Service {
 				Err(e) => tracing::warn!("Not starting metrics server: could not parse {val} (from {metrics_port_env_var}) as port number: {e}"),
 			},
 			Err(VarError::NotUnicode(_)) => tracing::warn!("Not starting metrics server: value of {metrics_port_env_var} is not valid unicode"),
-			Err(VarError::NotPresent) => tracing::debug!("Not starting metrics server: {metrics_port_env_var} is not set"),
+			Err(VarError::NotPresent) => tracing::info!("Not starting metrics server: {metrics_port_env_var} is not set"),
 		};
 
 		let cfg = CFG::from_env_vars(&env_prefix, env_vars()).unwrap_or_else(|e| {
