@@ -1,7 +1,7 @@
 #![allow(unused_crate_dependencies)]
 
+use secrecy::{ExposeSecret, Secret};
 use service_skeleton::{metric::counter, service, ServiceConfig};
-
 use std::{env, thread::sleep, time::Duration};
 
 #[derive(Clone, Debug, ServiceConfig)]
@@ -9,8 +9,7 @@ struct Config {
 	#[config(default_value = "World")]
 	name: String,
 
-	#[config(sensitive)]
-	password: String,
+	password: Secret<String>,
 }
 
 fn main() {
@@ -21,7 +20,7 @@ fn main() {
 
 fn say_hello(cfg: Config) {
 	println!("Hello, {}!", cfg.name);
-	println!("(The secret password is {})", cfg.password);
+	println!("(The secret password is {})", cfg.password.expose_secret());
 	counter("count", &vec![("name", cfg.name)], |c| {
 		c.inc();
 	});

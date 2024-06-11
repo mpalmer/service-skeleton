@@ -98,7 +98,6 @@ struct MyConfig {
 ```
 
 If you're familiar with [`clap`](https://crates.io/crates/clap), then hopefully the approach taken by `service-skeleton`'s config support will feel comfortable, as it took significant inspiration from `clap`.
-See [the `ServiceConfig` docs](https://docs.rs/service-skeleton/latest/service_skeleton/derive.ServiceConfig.html) for details of the available attribute directives.
 
 As you may have noticed from the previous examples, the configuration gets passed into the closure provided to `run`, so all you need to do is, in turn, pass that into your `say_hello` function, and you're off and running (as it were):
 
@@ -135,6 +134,104 @@ This will now instead print "Hello, Bobbie!" every five seconds.
 The environment variable that `service-skeleton` will use to try and read the configuration value from is determined by the name of struct member, prefixed with the name of the service (what was passed to `service`), then turned into all-uppercase.
 If the environment variable is missing, the default value will be used (if specified), or the program will exit.
 If the value specified cannot be [parsed](https://doc.rust-lang.org/std/primitive.str.html#method.parse) into a value of the struct member's type, the program will log an error and exit.
+
+
+### Configuration Type Conversion
+
+By default, `service-skeleton` uses [`str::parse()`](https://doc.rust-lang.org/std/primitive.str.html#method.parse) to convert the value in the environment variable (or the `default_value`, if provided and the environment variable is unset) into the type of the field in the configuration struct.
+Therefore, you can use any type that implements [`FromStr`](https://doc.rust-lang.org/std/str/trait.FromStr.html) as the type of a configuration field.
+If the parsing fails, you'll get a pleasant runtime error.
+
+However, if you have to parse into a type that, for whatever reason, you don't want to create via `FromStr`, you can instead define a `value_parser`, like this:
+
+```rust
+# use service_skeleton::ServiceConfig;
+# fn parse_hex<const N: usize>(s: &str) -> Result<[u8; N], String> { Ok([0u8; N]) }
+#[derive(Clone, ServiceConfig, Debug)]
+struct MyConfig {
+    #[config(value_parser = parse_hex::<4>)]
+    some_id: [u8; 4],
+}
+```
+
+Essentially, whatever is defined on the right-hand-side will be called as a function that takes `&str` and be expected to return `Result<T, impl std::fmt::Display>` (note that `std::fmt::Display` is a supertrait of `std::error::Error`, so you'll be OK with practically any error-producing parsing function out there, but you *can* make your own parsing functions return a `String`, which is so much easier for those ad-hoc parsing functions).
+
+
+### Secrets in Configuration
+
+(I wanted to call this section "Environmental Protection Agency", but it seems someone else already got that name first)
+
+One potential downside of using the process environment for configuration is that it is not necessarily entirely secret.
+On most systems, other processes with the same UID can read the environment out of `/proc/<PID>/environ`, `procstat -e`, and the like.  An attacker with RCE can read the environment out of the current process, and the environment also gets passed, by default, to subprocesses.
+So many ways for environment variables to leak their contents.
+
+The `service-skeleton` is aware of these problems, and wants to help.
+
+Firstly, if you wrap a field's type in `secrecy::Secret`, it will be removed from the environment after it is read, meaning that it won't get passed to subprocesses, and it won't be *trivially* readable in-process.
+It looks like this:
+
+```rust
+# use secrecy::Secret;
+# use service_skeleton::ServiceConfig;
+#[derive(Clone, ServiceConfig, Debug)]
+struct MyConfig {
+    secret_name: Secret<String>,
+}
+```
+
+(Note that we only support `Secret<T>`, not the `SecretFoo` wrappers that `secrecy` defines)
+
+However, making a field "secret" only *really* solves the subprocess problem, and to a lesser extent the read-it-from-the-current-process problem.
+The contents of these environment variables are still available in one way or another in most cases.
+
+Also, some people like to store their application configuration in revision control, because they feel it's better to keep everything in one place.
+However, storing secrets (private keys, API tokens, and the like) in revision control is... unwise.
+
+To prevent all these problems, we can mark one or more configuration items as `encrypted`:
+
+```rust
+# use service_skeleton::ServiceConfig;
+#[derive(Clone, ServiceConfig, Debug)]
+struct MyConfig {
+    #[config(encrypted,key_file_field="key_file")]
+    api_token: String,
+    #[config(encrypted,key_file_field="key_file")]
+    location_of_gold_bars: String,
+}
+```
+
+The values marked `encrypted` will be decrypted at runtime, using the key read from a file, whose name is specified in an environment variable derived from the "pseudo-field" given in `key_file_field`.
+Ideally, you won't store that key file in revision control, but instead inject it into your application's filesystem at runtime using your provider's secrets management mechanism.
+
+This is a lot of layers of indirection going on, I know... let's have an example.
+
+If your application is called "SuperApp", and is using the `MyConfig` struct defined above, then the environment variable named `SUPER_APP_KEY_FILE` will be consulted when the application starts up, looking for a filename.
+That filename will be read (relative to the working directory), and the contents parsed as a private key to decrypt the values specified in the `SUPER_APP_API_TOKEN` and `SUPER_APP_LOCATION_OF_GOLD_BARS` environment variables.
+
+
+#### Encrypting Secrets
+
+The final question is: how do we *encrypt* these secret values in the first place?
+For that matter, how do I get a private key?
+
+Enter: a small CLI tool called `sscrypt`.
+Using it is intended to be as straightforward as possible:
+
+1. Install it on your local machine using `cargo install --locked sscrypt`.
+
+2. Create a keypair by running `sscrypt init <name>`, where `<name>` is any identifier you like (such as `prod`, `stage`, or `bruce`, to keep things clear).
+  * The private key will be printed to stdout, which you should copy into your secrets manager, and then forget you ever saw it.
+  Probably best not to do it on a system running Windows Recall, either.
+  * The public key will be written to `<something>.key`, and you can safely commit that to revision control.
+
+3. To encrypt a secret, run `sscrypt encrypt <env var> <name>`, where `<env var>` is the name of the environment variable whose value you wish to encrypt, and `<name>` is the identifier for your public key.
+  * The public key to be used for encryption will be read out of `<something>.key` in the current working directory.
+  * You will be prompted to paste in the value to be encrypted.
+  * The value you paste in will be encrypted by the public key, in such a way that it can *only* be used for the environment variable you specified.
+  * The encrypted value, which you can safely store in revision control, will be printed to stdout.
+
+By the way, all this magic *also* works with the `FromStr` type conversion functionality.
+So the encrypted secret will be decrypted, then parsed, and the final value of whatever type you specify will end up in the config struct instance ready for use.
 
 
 ## Service Metrics

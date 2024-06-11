@@ -11,12 +11,11 @@ pub enum Error {
 	#[error("required config variable {var} not found")]
 	ConfigValueRequired { var: String },
 
-	#[error("failed to parse value {value} in {var}: {cause}")]
-	ConfigValueParse {
-		value: String,
-		var: String,
-		cause: String,
-	},
+	#[error("failed to parse value of {var}: {cause}")]
+	ConfigValueParse { var: String, cause: String },
+
+	#[error("cryptographic failure: {0}")]
+	Cryptography(#[from] sscrypt::Error),
 
 	#[error("no metric named {name}")]
 	NoSuchMetric { name: String },
@@ -28,9 +27,17 @@ pub enum Error {
 		labels_type: String,
 	},
 
-	#[error("could not start metrics server on [::]:{port}: {cause}")]
+	#[error("failed to read key from {file}")]
+	KeyRead {
+		file: String,
+		#[source]
+		cause: std::io::Error,
+	},
+
+	#[error("could not start metrics server on [::]:{port}")]
 	MetricsServerStart {
 		port: u16,
+		#[source]
 		cause: Box<dyn StdError + Send + Sync + 'static>,
 	},
 }
@@ -44,11 +51,18 @@ impl Error {
 	}
 
 	#[must_use]
-	pub fn config_value_parse(var: &str, value: impl Debug, cause: impl Display) -> Error {
+	pub fn config_value_parse(var: &str, cause: impl Display) -> Error {
 		Error::ConfigValueParse {
 			var: var.to_string(),
-			value: format!("{value:?}"),
 			cause: cause.to_string(),
+		}
+	}
+
+	#[must_use]
+	pub fn key_read(file: impl Into<String>, cause: std::io::Error) -> Error {
+		Error::KeyRead {
+			file: file.into(),
+			cause,
 		}
 	}
 
