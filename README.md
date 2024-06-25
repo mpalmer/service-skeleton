@@ -167,7 +167,7 @@ So many ways for environment variables to leak their contents.
 
 The `service-skeleton` is aware of these problems, and wants to help.
 
-Firstly, if you wrap a field's type in `secrecy::Secret`, it will be removed from the environment after it is read, meaning that it won't get passed to subprocesses, and it won't be *trivially* readable in-process.
+Firstly, if you mark a field as `#[config(sensitive)]`, it will be removed from the environment after it is read, meaning that it won't get passed to subprocesses, and it won't be *trivially* readable in-process.
 It looks like this:
 
 ```rust
@@ -175,27 +175,26 @@ It looks like this:
 # use service_skeleton::ServiceConfig;
 #[derive(Clone, ServiceConfig, Debug)]
 struct MyConfig {
-    secret_name: Secret<String>,
+    #[config(sensitive)]
+    secret_name: String,
 }
 ```
 
-(Note that we only support `Secret<T>`, not the `SecretFoo` wrappers that `secrecy` defines)
-
-However, making a field "secret" only *really* solves the subprocess problem, and to a lesser extent the read-it-from-the-current-process problem.
+However, making a field as sensitive only *really* solves the subprocess problem, and to a lesser extent the read-it-from-the-current-process problem.
 The contents of these environment variables are still available in one way or another in most cases.
 
 Also, some people like to store their application configuration in revision control, because they feel it's better to keep everything in one place.
 However, storing secrets (private keys, API tokens, and the like) in revision control is... unwise.
 
-To prevent all these problems, we can mark one or more configuration items as `encrypted`:
+To prevent all these problems, we can mark one or more configuration items as `#[config(encrypted)]`, and give the name of a field that specifies the file to read the decryption key from, like this:
 
 ```rust
 # use service_skeleton::ServiceConfig;
 #[derive(Clone, ServiceConfig, Debug)]
 struct MyConfig {
-    #[config(encrypted,key_file_field="key_file")]
+    #[config(encrypted, key_file_field="secret_key")]
     api_token: String,
-    #[config(encrypted,key_file_field="key_file")]
+    #[config(encrypted, key_file_field="secret_key")]
     location_of_gold_bars: String,
 }
 ```
@@ -205,7 +204,7 @@ Ideally, you won't store that key file in revision control, but instead inject i
 
 This is a lot of layers of indirection going on, I know... let's have an example.
 
-If your application is called "SuperApp", and is using the `MyConfig` struct defined above, then the environment variable named `SUPER_APP_KEY_FILE` will be consulted when the application starts up, looking for a filename.
+If your application is called "SuperApp", and is using the `MyConfig` struct defined above, then the environment variable named `SUPER_APP_SECRET_KEY` will be consulted when the application starts up, looking for a filename.
 That filename will be read (relative to the working directory), and the contents parsed as a private key to decrypt the values specified in the `SUPER_APP_API_TOKEN` and `SUPER_APP_LOCATION_OF_GOLD_BARS` environment variables.
 
 
@@ -214,20 +213,20 @@ That filename will be read (relative to the working directory), and the contents
 The final question is: how do we *encrypt* these secret values in the first place?
 For that matter, how do I get a private key?
 
-Enter: a small CLI tool called `sscrypt`.
+Enter: a small CLI tool called `sscrypt` (aka "service-skeleton cryptography").
 Using it is intended to be as straightforward as possible:
 
 1. Install it on your local machine using `cargo install --locked sscrypt`.
 
 2. Create a keypair by running `sscrypt init <name>`, where `<name>` is any identifier you like (such as `prod`, `stage`, or `bruce`, to keep things clear).
   * The private key will be printed to stdout, which you should copy into your secrets manager, and then forget you ever saw it.
-  Probably best not to do it on a system running Windows Recall, either.
+    Probably best not to do it on a system running Windows Recall, either.
   * The public key will be written to `<something>.key`, and you can safely commit that to revision control.
 
 3. To encrypt a secret, run `sscrypt encrypt <env var> <name>`, where `<env var>` is the name of the environment variable whose value you wish to encrypt, and `<name>` is the identifier for your public key.
   * The public key to be used for encryption will be read out of `<something>.key` in the current working directory.
-  * You will be prompted to paste in the value to be encrypted.
-  * The value you paste in will be encrypted by the public key, in such a way that it can *only* be used for the environment variable you specified.
+  * You will be prompted to enter in the value to be encrypted.
+  * The value you enter will be encrypted by the public key, in such a way that it can *only* be used for the environment variable you specified.
   * The encrypted value, which you can safely store in revision control, will be printed to stdout.
 
 By the way, all this magic *also* works with the `FromStr` type conversion functionality.

@@ -21,6 +21,7 @@ fn test_parse_secrets() {
 
 	#[derive(Debug, ServiceConfig)]
 	struct SecretConfig {
+		#[config(sensitive)]
 		value: Secret<String>,
 	}
 

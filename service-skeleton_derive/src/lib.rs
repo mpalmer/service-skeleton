@@ -42,7 +42,7 @@ impl ToTokens for ServiceConfigReceiver {
 		{
 			fields.push(f.field_init());
 
-			purges.push(f.purge_secret());
+			purges.push(f.purge_sensitive());
 		}
 
 		tokens.extend(quote! {
@@ -74,6 +74,7 @@ struct ServiceConfigField {
 	default_value: Option<SpannedValue<String>>,
 	value_parser: Option<SpannedValue<ExprPath>>,
 	encrypted: Flag,
+	sensitive: Flag,
 	key_file_field: Option<SpannedValue<String>>,
 }
 
@@ -128,8 +129,8 @@ impl ServiceConfigField {
 		}
 	}
 
-	fn purge_secret(&self) -> TokenStream {
-		if self.is_secret() {
+	fn purge_sensitive(&self) -> TokenStream {
+		if self.is_sensitive() {
 			let fmt_str = Self::env_var_format_string(&self.field_name().to_string());
 			quote_spanned! { self.ident.span()=>
 				::tracing::debug!("Removing sensitive env var {}", format!(#fmt_str, prefix));
@@ -154,21 +155,8 @@ impl ServiceConfigField {
 		)
 	}
 
-	fn is_secret(&self) -> bool {
-		#[allow(clippy::wildcard_enum_match_arm)] // Yes, that's rather the point here
-		match &self.ty {
-			Type::Path(tp) if tp.qself.is_none() => {
-				let path_idents = tp.path.segments.iter().fold(String::new(), |mut s, v| {
-					s.push_str(&v.ident.to_string());
-					s.push_str("->");
-					s
-				});
-				vec!["Secret->", "secrecy::Secret"]
-					.into_iter()
-					.any(|s| *s == path_idents)
-			}
-			_ => false,
-		}
+	fn is_sensitive(&self) -> bool {
+		self.sensitive.is_present()
 	}
 
 	fn is_optional(&self) -> bool {
