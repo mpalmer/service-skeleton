@@ -123,7 +123,7 @@ impl ServiceConfigField {
 			}
 		} else {
 			quote_spanned! { self.ident.span()=>
-				var_map.get(&format!(#field_var_fmt_str, prefix)).map(|s| s.as_str())
+				var_map.get(&format!(#field_var_fmt_str, prefix)).map(::std::string::String::as_str)
 			}
 		}
 	}
