@@ -1,6 +1,6 @@
 use base64::prelude::{Engine, BASE64_URL_SAFE_NO_PAD};
 use secrecy::{ExposeSecret, Secret};
-use strong_box::{SharedStrongBox, SharedStrongBoxKey};
+use strong_box::{SharedStrongBox, SharedStrongBoxKey, StrongBox};
 
 mod error;
 pub use error::Error;
@@ -55,7 +55,7 @@ pub fn decrypt(ciphertext: &str, ctx: &str, key: &Secret<String>) -> Result<Stri
 	let strong_box = SharedStrongBox::new(key);
 
 	Ok(String::from_utf8(
-		strong_box.decrypt(&ciphertext, ctx.as_bytes())?,
+		strong_box.decrypt(ciphertext, ctx.as_bytes())?,
 	)?)
 }
 
