@@ -189,7 +189,7 @@ impl ServiceConfigField {
 				if self.is_optional() {
 					#[allow(clippy::unwrap_used)] // There has to be segments if we got here
 					if let syn::PathArguments::AngleBracketed(args) =
-						&tp.path.segments.iter().last().unwrap().arguments
+						&tp.path.segments.iter().next_back().unwrap().arguments
 					{
 						if let Some(syn::GenericArgument::Type(t)) = &args.args.iter().next() {
 							t
