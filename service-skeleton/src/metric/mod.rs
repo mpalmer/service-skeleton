@@ -101,7 +101,7 @@ where
 				type_name::<M>(),
 				type_name::<L>(),
 			);
-		};
+		}
 	} else {
 		tracing::warn!("No metric named {}", name.as_ref());
 	}

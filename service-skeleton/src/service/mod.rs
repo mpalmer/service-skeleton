@@ -134,7 +134,7 @@ impl Service {
 			},
 			Err(VarError::NotUnicode(_)) => tracing::warn!("Not starting metrics server: value of {metrics_port_env_var} is not valid unicode"),
 			Err(VarError::NotPresent) => tracing::info!("Not starting metrics server: {metrics_port_env_var} is not set"),
-		};
+		}
 
 		let cfg = CFG::from_env_vars(&env_prefix, env_vars()).unwrap_or_else(|e| {
 			tracing::error!("Failed to configure {}: {e}", self.name);
