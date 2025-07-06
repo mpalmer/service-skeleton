@@ -1,4 +1,4 @@
-use secrecy::Secret;
+use secrecy::SecretString;
 use std::{
 	collections::HashMap,
 	fmt::{Debug, Display},
@@ -58,7 +58,7 @@ pub fn determine_optional_value<RT: Debug + Sync + Send, E: Display>(
 
 pub fn fetch_encrypted_field<H1: ::std::hash::BuildHasher, H2: ::std::hash::BuildHasher>(
 	var_map: &HashMap<String, String, H1>,
-	key_map: &mut HashMap<Key, Secret<String>, H2>,
+	key_map: &mut HashMap<Key, SecretString, H2>,
 	value_field_var: &str,
 	key_spec: &Key,
 ) -> Result<Option<String>, Error> {
@@ -80,7 +80,7 @@ pub fn fetch_encrypted_field<H1: ::std::hash::BuildHasher, H2: ::std::hash::Buil
 					.to_string()
 			}
 		};
-		key_map.insert(key_spec.clone(), Secret::new(k));
+		key_map.insert(key_spec.clone(), k.into());
 		// How much I wish there was an Entry method that allowed fallible closures...
 		#[allow(clippy::unwrap_used)]
 		key_map.get(key_spec).unwrap()
