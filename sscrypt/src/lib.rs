@@ -1,5 +1,5 @@
 use base64::prelude::{Engine, BASE64_URL_SAFE_NO_PAD};
-use secrecy::{ExposeSecret, Secret};
+use secrecy::{ExposeSecret, SecretString};
 use strong_box::{SharedStrongBox, SharedStrongBoxKey, StrongBox};
 
 mod error;
@@ -43,7 +43,7 @@ pub fn encrypt(plaintext: &str, ctx: &str, key: &str) -> Result<String, Error> {
 	Ok(BASE64_URL_SAFE_NO_PAD.encode(strong_box.encrypt(plaintext.as_bytes(), ctx.as_bytes())?))
 }
 
-pub fn decrypt(ciphertext: &str, ctx: &str, key: &Secret<String>) -> Result<String, Error> {
+pub fn decrypt(ciphertext: &str, ctx: &str, key: &SecretString) -> Result<String, Error> {
 	let ciphertext = BASE64_URL_SAFE_NO_PAD.decode(ciphertext)?;
 	let keydata = key
 		.expose_secret()

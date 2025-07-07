@@ -171,12 +171,12 @@ Firstly, if you mark a field as `#[config(sensitive)]`, it will be removed from 
 It looks like this:
 
 ```rust
-# use secrecy::Secret;
+# use secrecy::SecretString;
 # use service_skeleton::ServiceConfig;
 #[derive(Clone, ServiceConfig, Debug)]
 struct MyConfig {
     #[config(sensitive)]
-    secret_name: String,
+    secret_name: SecretString,
 }
 ```
 
@@ -250,11 +250,11 @@ We use the common [Builder pattern](https://en.wikipedia.org/wiki/Builder_patter
 Thus, if we wanted to have a counter that exposed how many times the service has said hello, it would look like this:
 
 ```rust
-use service_skeleton::service;
+use service_skeleton::{service, metric::NoLabels};
 
 fn main() {
     service("InstrumentedHello")
-        .counter::<()>("count", "Number of times we've said hello")
+        .counter::<NoLabels>("count", "Number of times we've said hello")
         .run(|_cfg: ()| say_hello());
 }
 # fn say_hello() { std::process::exit(0) }
@@ -265,10 +265,10 @@ There are also `gauge` and `histogram` methods that declare a metric of those ty
 To access your newly-created counter, call the [`counter`](https://docs.rs/service-skeleton/latest/...) function, passing the metric name and label set, and a closure that manipulates the counter as needed:
 
 ```rust
-# use service_skeleton::service;
+# use service_skeleton::{service, metric::NoLabels};
 # fn main() {
 #    service("InstrumentedHello")
-#        .counter::<()>("count", "Number of times we've said hello")
+#        .counter::<NoLabels>("count", "Number of times we've said hello")
 #        .run(|_cfg: ()| say_hello());
 # }
 # use std::time::Duration;
@@ -282,7 +282,7 @@ fn say_hello() {
 }
 ```
 
-> The reference to `()` in the `counter` call (and as the type in the counter declaration, `::<()>`) refers to the *label set*; it is possible to provide arbitrary types as the labels for metrics calls.
+> The reference to `NoLabels` in the `counter` call (and as the type in the counter declaration, `::<NoLabels>()`) refers to the *label set*; it is possible to provide arbitrary types as the labels for metrics calls.
 > See [the prometheus-client docs](https://docs.rs/prometheus-client/latest/prometheus_client/encoding/trait.EncodeLabelSet.html) for more information on custom label set types.
 
 Finally, you need to be able to *scrape* your metric to get it into your monitoring system.

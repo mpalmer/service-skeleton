@@ -24,16 +24,21 @@ darling = "0.20"
 heck = "0.5"
 parking_lot = "0.12"
 proc-macro2 = "1.0"
-prometheus-client = "0.21"
+prometheus-client = "0.23"
 quote = "1.0"
-secrecy = "0.8"
-strong-box = "0.4"
+secrecy = "0.10"
+strong-box = "0.5"
 syn = "2.0"
-thiserror = "1.0"
-thiserror-ext = "0.2"
+thiserror = "2.0"
+thiserror-ext = "0.3"
 tiny_http = "0.12"
 tracing = "0.1"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-tree = "0.4"
 trybuild = "1.0"
+
+[patch.crates-io]
+# Oh dear lord, the latest secrecy release doesn't have FromStr support...
+# https://github.com/iqlusioninc/crates/issues/1314
+secrecy = { git = "https://github.com/iqlusioninc/crates" }

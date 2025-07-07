@@ -1,6 +1,6 @@
 #![allow(unused_crate_dependencies)]
 
-use secrecy::{ExposeSecret, Secret};
+use secrecy::{ExposeSecret, SecretString};
 use service_skeleton::{metric::counter, service, ServiceConfig};
 use std::{env, thread::sleep, time::Duration};
 
@@ -9,7 +9,7 @@ struct Config {
 	#[config(default_value = "World")]
 	name: String,
 
-	password: Secret<String>,
+	password: SecretString,
 }
 
 fn main() {

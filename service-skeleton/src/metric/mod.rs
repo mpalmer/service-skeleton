@@ -9,11 +9,10 @@ use std::sync::OnceLock;
 
 // Re-export so services don't have to depend on prometheus-client directly,
 // which can get version-compatible-ugly real quick
-pub use prometheus_client::encoding::{EncodeLabelSet, EncodeLabelValue};
-/// Re-exports that are needed to derive any of the `EncodeLabel*` traits
-pub mod encode_labels {
-	pub use prometheus_client::{self, encoding::EncodeLabelSet, encoding::EncodeLabelValue};
-}
+pub use prometheus_client::{
+	self,
+	encoding::{EncodeLabelSet, EncodeLabelValue, LabelSetEncoder},
+};
 
 use std::{
 	any::{type_name, Any},
@@ -21,6 +20,16 @@ use std::{
 	hash::Hash,
 	sync::{Arc, Mutex},
 };
+
+/// Indicate that a declared metric does not take any labels.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum NoLabels {}
+
+impl EncodeLabelSet for NoLabels {
+	fn encode(&self, _encoder: LabelSetEncoder<'_>) -> Result<(), std::fmt::Error> {
+		Ok(())
+	}
+}
 
 mod server;
 pub(crate) use server::start_metrics_server;
@@ -40,7 +49,7 @@ impl Histogrammer {
 
 impl MetricConstructor<Histogram> for Histogrammer {
 	fn new_metric(&self) -> Histogram {
-		Histogram::new(self.buckets.clone().into_iter())
+		Histogram::new(self.buckets.to_owned())
 	}
 }
 

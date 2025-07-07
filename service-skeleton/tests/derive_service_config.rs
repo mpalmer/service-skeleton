@@ -17,12 +17,12 @@ fn test_default_parse() {
 
 #[test]
 fn test_parse_secrets() {
-	use secrecy::{ExposeSecret, Secret};
+	use secrecy::{ExposeSecret, SecretString};
 
 	#[derive(Debug, ServiceConfig)]
 	struct SecretConfig {
 		#[config(sensitive)]
-		value: Secret<String>,
+		value: SecretString,
 	}
 
 	// this is the sort of thing that gets you kicked out of the nicer establishments

@@ -50,7 +50,7 @@ impl ToTokens for ServiceConfigReceiver {
 				fn from_env_vars(prefix: &str, vars: impl Iterator<Item = (String, String)>) -> Result<#struct_name, service_skeleton::Error> {
 					let prefix = ::service_skeleton::heck::AsShoutySnekCase(prefix).to_string();
 					let var_map: ::std::collections::HashMap<String, String> = vars.collect();
-					let mut key_map: ::std::collections::HashMap<::service_skeleton::config::Key, ::secrecy::Secret<String>> = ::std::collections::HashMap::new();
+					let mut key_map: ::std::collections::HashMap<::service_skeleton::config::Key, ::secrecy::SecretString> = ::std::collections::HashMap::new();
 
 					let cfg = #struct_name {
 						#(#fields)*
