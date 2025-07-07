@@ -23,6 +23,7 @@ use std::{
 
 /// Indicate that a declared metric does not take any labels.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum NoLabels {}
 
 impl EncodeLabelSet for NoLabels {
@@ -49,7 +50,7 @@ impl Histogrammer {
 
 impl MetricConstructor<Histogram> for Histogrammer {
 	fn new_metric(&self) -> Histogram {
-		Histogram::new(self.buckets.to_owned())
+		Histogram::new(self.buckets.clone())
 	}
 }
 
