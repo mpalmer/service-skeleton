@@ -14,9 +14,6 @@ pub enum Error {
 	#[error("failed to parse value of {var}: {cause}")]
 	ConfigValueParse { var: String, cause: String },
 
-	#[error("cryptographic failure: {0}")]
-	Cryptography(#[from] sscrypt::Error),
-
 	#[error("no metric named {name}")]
 	NoSuchMetric { name: String },
 

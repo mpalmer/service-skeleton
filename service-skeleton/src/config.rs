@@ -86,7 +86,10 @@ pub fn fetch_encrypted_field<H1: ::std::hash::BuildHasher, H2: ::std::hash::Buil
 		key_map.get(key_spec).unwrap()
 	};
 
-	Ok(Some(sscrypt::decrypt(value, value_field_var, key)?))
+	Ok(Some(
+		sscrypt::decrypt(value, value_field_var, key)
+			.map_err(|e| Error::config_value_parse(value_field_var, e))?,
+	))
 }
 
 #[derive(Clone, Debug, PartialEq, Hash, Eq)]
