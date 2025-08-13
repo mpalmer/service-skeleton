@@ -85,4 +85,6 @@ rustflags = [
     "-Aclippy::default_trait_access",
 	# Temporary until I wrote more docs
 	"-Aclippy::missing_errors_doc",
+	# This is, sadly, more trouble than it's worth
+	"-Aclippy::multiple_crate_versions",
 ]
