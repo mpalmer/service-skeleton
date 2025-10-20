@@ -48,7 +48,6 @@ rustflags = [
     "-Wclippy::shadow_same",
     "-Wclippy::shadow_unrelated",
     "-Wclippy::string_slice",
-    "-Wclippy::string_to_string",
     "-Wclippy::suspicious_xor_used_as_pow",
     "-Wclippy::todo",
     "-Wclippy::try_err",

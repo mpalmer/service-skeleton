@@ -20,7 +20,7 @@ sscrypt = { version = "0.0.0-git", path = "sscrypt" }
 
 base64 = "0.22"
 clap = { version = "4.0", features = ["derive"] }
-darling = "0.20"
+darling = "0.21"
 heck = "0.5"
 parking_lot = "0.12"
 proc-macro2 = "1.0"

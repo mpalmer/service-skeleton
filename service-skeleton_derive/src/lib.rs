@@ -1,3 +1,5 @@
+#![allow(clippy::needless_continue)] // Darling's FromField implementation has a needless continue; I'll figure out how to fix it another time
+
 use darling::{ast, util::Flag, util::SpannedValue, FromDeriveInput, FromField};
 use heck::AsShoutySnekCase;
 use proc_macro2::TokenStream;
