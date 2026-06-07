@@ -33,8 +33,12 @@ impl Command {
 	fn do_init(name: &str) {
 		let (prvkey, pubkey): (PrvKey, PubKey) = make_key().expect("failed to create new key");
 
-		println!("Private key: {}", &*prvkey);
-		std::fs::write(format!("{name}.key"), &*pubkey)
+		// PrvKey does not implement std::fmt::Display for very, *very* good reasons, so this isn't a useless borrow so much as a hack borrow
+		#[allow(unknown_lints)]
+		#[allow(clippy::useless_borrows_in_formatting)]
+		let prvkey = &*prvkey;
+		println!("Private key: {prvkey}");
+		std::fs::write(format!("{name}.key"), pubkey)
 			.unwrap_or_else(|e| panic!("failed to write public key to {name}.key: {e}"));
 		println!("Public key written to {name}.key");
 	}

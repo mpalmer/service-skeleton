@@ -81,3 +81,15 @@ impl std::ops::Deref for PubKey {
 		&self.0
 	}
 }
+
+impl std::fmt::Display for PubKey {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.0)
+	}
+}
+
+impl AsRef<[u8]> for PubKey {
+	fn as_ref(&self) -> &[u8] {
+		self.0.as_ref()
+	}
+}
